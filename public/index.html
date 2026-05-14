@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jkerr's dump pile</title>
+
+<style>
+body{
+    background:#121212;
+    color:white;
+    font-family:Arial;
+    margin:0;
+    padding:0;
+}
+
+header{
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#1c1c1c;
+}
+
+.logo{
+    font-size:2rem;
+    font-weight:bold;
+}
+
+.container{
+    padding:20px;
+}
+
+.upload-area{
+    border:2px dashed #555;
+    border-radius:20px;
+    padding:40px;
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.song-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:20px;
+}
+
+.song-card{
+    background:#1f1f1f;
+    padding:20px;
+    border-radius:20px;
+}
+
+.cover{
+    width:100%;
+    aspect-ratio:1;
+    background:linear-gradient(45deg,#8b5cf6,#ec4899);
+    border-radius:15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:3rem;
+    margin-bottom:15px;
+}
+
+button{
+    background:#8b5cf6;
+    border:none;
+    color:white;
+    padding:10px 15px;
+    border-radius:999px;
+    cursor:pointer;
+}
+
+.player{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    background:#1c1c1c;
+    padding:15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">🎵 jkerr's dump pile</div>
+
+<input type="text" id="search" placeholder="Search songs...">
+</header>
+
+<div class="container">
+
+<div class="upload-area">
+<h2>Upload Music</h2>
+
+<form action="/upload" method="post" enctype="multipart/form-data">
+<input type="file" name="music" accept="audio/*" required>
+<br><br>
+<button type="submit">Upload Song</button>
+</form>
+</div>
+
+<div class="song-grid" id="songGrid"></div>
+
+</div>
+
+<div class="player">
+<div id="nowPlaying">Nothing Playing</div>
+<audio id="audioPlayer" controls></audio>
+</div>
+
+<script>
+const audioPlayer = document.getElementById('audioPlayer');
+const nowPlaying = document.getElementById('nowPlaying');
+const songGrid = document.getElementById('songGrid');
+const search = document.getElementById('search');
+
+let songs = [];
+let currentSong = 0;
+
+async function loadSongs() {
+    const res = await fetch('/songs');
+    songs = await res.json();
+
+    renderSongs(songs);
+}
+
+function renderSongs(songList) {
+    songGrid.innerHTML = '';
+
+    songList.forEach((song,index) => {
+
+        const card = document.createElement('div');
+        card.className = 'song-card';
+
+        card.innerHTML = `
+            <div class="cover">🎵</div>
+
+            <div>${song.name}</div>
+
+            <br>
+
+            <button onclick="playSong(${index})">
+    	▶ Play
+	</button>
+
+	<button onclick="pauseSong()">
+    	⏸ Pause
+	</button>
+        `;
+
+        songGrid.appendChild(card);
+    });
+}
+
+function playSong(index) {
+    currentSong = index;
+
+    audioPlayer.src = songs[index].url;
+    audioPlayer.play();
+
+    nowPlaying.textContent =
+        'Now Playing: ' + songs[index].name;
+}
+
+function pauseSong() {
+    audioPlayer.pause();
+}
+
+search.addEventListener('input', e => {
+
+    const value = e.target.value.toLowerCase();
+
+    const filtered = songs.filter(song =>
+        song.name.toLowerCase().includes(value)
+    );
+
+    renderSongs(filtered);
+});
+
+loadSongs();
+</script>
+
+</body>
+</html>

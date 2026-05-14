@@ -29,6 +29,7 @@ header{
 
 .container{
     padding:20px;
+    padding-bottom:150px;
 }
 
 .upload-area{
@@ -75,9 +76,48 @@ button{
 .player{
     position:fixed;
     bottom:0;
+    left:0;
     width:100%;
     background:#1c1c1c;
-    padding:15px;
+    padding:12px;
+    box-sizing:border-box;
+    z-index:999;
+}
+
+audio{
+    width:100%;
+    max-width:100%;
+}
+
+@media(max-width:600px){
+    header{
+        flex-direction:column;
+        gap:12px;
+        align-items:stretch;
+    }
+
+    .logo{
+        font-size:1.4rem;
+        text-align:center;
+    }
+
+    #search{
+        width:100%;
+        padding:12px;
+        box-sizing:border-box;
+    }
+
+    .song-grid{
+        grid-template-columns:1fr;
+    }
+
+    .player{
+        padding:10px;
+    }
+
+    audio{
+        height:45px;
+    }
 }
 </style>
 </head>

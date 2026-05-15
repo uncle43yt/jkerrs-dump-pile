@@ -41,10 +41,22 @@ app.get('/songs', (req, res) => {
 
         const songs = files.map(file => ({
             name: file,
-            url: '/music/' + file
+            url: '/music/' + encodeURIComponent(file)
         }));
 
         res.json(songs);
+    });
+});
+
+app.delete('/delete/:name', (req, res) => {
+    const filePath = path.join(__dirname, 'music_uploads', req.params.name);
+
+    fs.unlink(filePath, err => {
+        if (err) {
+            return res.status(500).send('Delete failed');
+        }
+
+        res.send('Deleted');
     });
 });
 

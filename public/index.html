@@ -64,6 +64,11 @@ header{
     margin-bottom:15px;
 }
 
+.song-name{
+    word-break:break-word;
+    margin-bottom:15px;
+}
+
 button{
     background:#8b5cf6;
     border:none;
@@ -71,6 +76,11 @@ button{
     padding:10px 15px;
     border-radius:999px;
     cursor:pointer;
+    margin:4px;
+}
+
+.delete-btn{
+    background:#dc2626;
 }
 
 .player{
@@ -126,7 +136,6 @@ audio{
 
 <header>
 <div class="logo">🎵 jkerr's dump pile</div>
-
 <input type="text" id="search" placeholder="Search songs...">
 </header>
 
@@ -163,7 +172,6 @@ let currentSong = 0;
 async function loadSongs() {
     const res = await fetch('/songs');
     songs = await res.json();
-
     renderSongs(songs);
 }
 
@@ -171,24 +179,16 @@ function renderSongs(songList) {
     songGrid.innerHTML = '';
 
     songList.forEach((song,index) => {
-
         const card = document.createElement('div');
         card.className = 'song-card';
 
         card.innerHTML = `
             <div class="cover">🎵</div>
+            <div class="song-name">${song.name}</div>
 
-            <div>${song.name}</div>
-
-            <br>
-
-            <button onclick="playSong(${index})">
-    	▶ Play
-	</button>
-
-	<button onclick="pauseSong()">
-    	⏸ Pause
-	</button>
+            <button onclick="playSong(${index})">▶ Play</button>
+            <button onclick="pauseSong()">⏸ Pause</button>
+            <button class="delete-btn" onclick="deleteSong('${song.name}')">🗑 Delete</button>
         `;
 
         songGrid.appendChild(card);
@@ -197,7 +197,6 @@ function renderSongs(songList) {
 
 function playSong(index) {
     currentSong = index;
-
     audioPlayer.src = songs[index].url;
     audioPlayer.play();
 
@@ -209,8 +208,35 @@ function pauseSong() {
     audioPlayer.pause();
 }
 
-search.addEventListener('input', e => {
+async function deleteSong(songName) {
+    const confirmed = confirm(
+        'Are you sure you want to delete "' + songName + '"?'
+    );
 
+    if(!confirmed) return;
+
+    const res = await fetch(
+        '/delete/' + encodeURIComponent(songName),
+        { method:'DELETE' }
+    );
+
+    if(res.ok){
+        if(nowPlaying.textContent.includes(songName)){
+            audioPlayer.pause();
+            audioPlayer.src = '';
+            nowPlaying.textContent = 'Nothing Playing';
+        }
+
+        songs = songs.filter(song => song.name !== songName);
+        renderSongs(songs);
+
+        alert('Song deleted');
+    } else {
+        alert('Could not delete song');
+    }
+}
+
+search.addEventListener('input', e => {
     const value = e.target.value.toLowerCase();
 
     const filtered = songs.filter(song =>
